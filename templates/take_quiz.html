@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Take Quiz{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('user_dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">{{ quiz.chapter.name }} Quiz</li>
+                </ol>
+            </nav>
+            
+            <div class="card shadow-sm fade-in">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ quiz.chapter.name }} Quiz</h3>
+                        <small class="text-muted">Duration: {{ remaining_time }} minutes</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="h4 mb-0" id="timer"></div>
+                        <small class="text-muted">Time Remaining</small>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('submit_quiz', quiz_id=quiz.id) }}" id="quiz-form">
+                        {% for question in quiz.questions %}
+                        <div class="question-card mb-4 p-4 border rounded">
+                            <h5 class="mb-3">{{ loop.index }}. {{ question.question_statement }}</h5>
+                            <div class="options-list">
+                                <div class="option mb-2">
+                                    <input type="radio" class="btn-check" name="answer_{{ question.id }}" 
+                                           id="q{{ question.id }}_1" value="1" required>
+                                    <label class="btn btn-outline-primary w-100 text-start" for="q{{ question.id }}_1">
+                                        <i class="fas fa-check-circle me-2 invisible"></i>{{ question.option1 }}
+                                    </label>
+                                </div>
+                                <div class="option mb-2">
+                                    <input type="radio" class="btn-check" name="answer_{{ question.id }}" 
+                                           id="q{{ question.id }}_2" value="2" required>
+                                    <label class="btn btn-outline-primary w-100 text-start" for="q{{ question.id }}_2">
+                                        <i class="fas fa-check-circle me-2 invisible"></i>{{ question.option2 }}
+                                    </label>
+                                </div>
+                                <div class="option mb-2">
+                                    <input type="radio" class="btn-check" name="answer_{{ question.id }}" 
+                                           id="q{{ question.id }}_3" value="3" required>
+                                    <label class="btn btn-outline-primary w-100 text-start" for="q{{ question.id }}_3">
+                                        <i class="fas fa-check-circle me-2 invisible"></i>{{ question.option3 }}
+                                    </label>
+                                </div>
+                                <div class="option mb-2">
+                                    <input type="radio" class="btn-check" name="answer_{{ question.id }}" 
+                                           id="q{{ question.id }}_4" value="4" required>
+                                    <label class="btn btn-outline-primary w-100 text-start" for="q{{ question.id }}_4">
+                                        <i class="fas fa-check-circle me-2 invisible"></i>{{ question.option4 }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-secondary" 
+                               onclick="return confirm('Are you sure you want to leave? Your progress will be lost.')">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Quiz
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .question-card {
+        transition: all 0.3s ease;
+        background-color: white;
+    }
+    .question-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .btn-check:checked + .btn-outline-primary .invisible {
+        visibility: visible !important;
+    }
+    #timer {
+        font-family: monospace;
+        color: #2196F3;
+    }
+    #timer.warning {
+        color: #FFC107;
+    }
+    #timer.danger {
+        color: #F44336;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('quiz-form');
+        const timer = document.getElementById('timer');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const cancelBtn = document.querySelector('.btn-outline-secondary');
+        
+        // Get server time and calculate end time
+        const serverNow = {{ now.timestamp() * 1000 }}; // Server time in milliseconds
+        const clientNow = Date.now(); // Client time in milliseconds
+        const timeOffset = clientNow - serverNow; // Offset between client and server time
+        const quizEndTime = {{ quiz_end_time.timestamp() * 1000 }}; // Quiz end time in milliseconds
+        
+        function getTimeLeft() {
+            const now = Date.now() - timeOffset; // Current time adjusted to server time
+            return Math.max(0, Math.floor((quizEndTime - now) / 1000));
+        }
+        
+        function updateTimer() {
+            const timeLeft = getTimeLeft();
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update timer color and UI based on time remaining
+            if (timeLeft <= 300) { // Last 5 minutes
+                timer.className = 'h4 mb-0 danger';
+                if (!timer.dataset.warned) {
+                    timer.dataset.warned = 'true';
+                    alert('5 minutes remaining!');
+                }
+            } else if (timeLeft <= 600) { // Last 10 minutes
+                timer.className = 'h4 mb-0 warning';
+            }
+            
+            if (timeLeft <= 0) {
+                submitBtn.disabled = true;
+                cancelBtn.disabled = true;
+                form.submit();
+                return;
+            }
+            
+            setTimeout(updateTimer, 1000);
+        }
+        
+        // Start timer
+        updateTimer();
+        
+        // Save answers periodically
+        function saveAnswers() {
+            const answers = {};
+            form.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+                answers[radio.name] = radio.value;
+            });
+            localStorage.setItem('quiz_' + {{ quiz.id }}, JSON.stringify(answers));
+        }
+        
+        // Load saved answers
+        try {
+            const saved = JSON.parse(localStorage.getItem('quiz_' + {{ quiz.id }}));
+            if (saved) {
+                Object.entries(saved).forEach(([name, value]) => {
+                    const radio = form.querySelector(`input[name="${name}"][value="${value}"]`);
+                    if (radio) radio.checked = true;
+                });
+            }
+        } catch (e) {
+            console.error('Error loading saved answers:', e);
+        }
+        
+        // Save answers every 5 seconds
+        setInterval(saveAnswers, 5000);
+        
+        // Handle form submission
+        form.addEventListener('submit', function(e) {
+            if (getTimeLeft() <= 0) {
+                alert('Time is up! Your answers will be submitted automatically.');
+            }
+            localStorage.removeItem('quiz_' + {{ quiz.id }}); // Clear saved answers
+            window.onbeforeunload = null; // Remove leave warning
+        });
+        
+        // Warn before leaving page
+        window.onbeforeunload = function(e) {
+            const timeLeft = getTimeLeft();
+            if (timeLeft > 0) {
+                e.preventDefault();
+                return '';
+            }
+        };
+        
+        // Handle radio button changes
+        form.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', saveAnswers);
+        });
+    });
+</script>
+{% endblock %}

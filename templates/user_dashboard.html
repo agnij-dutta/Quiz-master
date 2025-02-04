@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Welcome, {{ current_user.full_name }}</h2>
+
+    <!-- Overall Performance -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Your Performance Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Total Attempts</h6>
+                                <h3>{{ overall_stats.total_attempts }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Average Score</h6>
+                                <h3>{{ "%.2f"|format(overall_stats.avg_score) }}%</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Personal Best</h6>
+                                <h3>{{ "%.2f"|format(overall_stats.personal_best) }}%</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Recent Average</h6>
+                                <h3>{{ "%.2f"|format(overall_stats.recent_avg) }}%</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ranking Information -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Your Ranking</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h6>Current Rank</h6>
+                                <h3>#{{ ranking_info.rank }}</h3>
+                                <small>out of {{ ranking_info.total_students }} students</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h6>Percentile</h6>
+                                <h3>{{ "%.2f"|format(ranking_info.percentile) }}</h3>
+                                <small>You're doing better than {{ "%.1f"|format(ranking_info.percentile) }}% of students</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h6>Status</h6>
+                                <h3>
+                                    {% if ranking_info.percentile >= 90 %}
+                                        🏆 Outstanding
+                                    {% elif ranking_info.percentile >= 75 %}
+                                        ⭐ Excellent
+                                    {% elif ranking_info.percentile >= 50 %}
+                                        👍 Good
+                                    {% else %}
+                                        📚 Keep Learning
+                                    {% endif %}
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Performance -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Subject-wise Performance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Average Score</th>
+                                    <th>Best Score</th>
+                                    <th>Total Attempts</th>
+                                    <th>Chapter Breakdown</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for perf in subject_performance %}
+                                <tr>
+                                    <td>{{ perf.subject.name }}</td>
+                                    <td>{{ "%.2f"|format(perf.avg_score) }}%</td>
+                                    <td>{{ "%.2f"|format(perf.best_score) }}%</td>
+                                    <td>{{ perf.total_attempts }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" 
+                                                data-bs-target="#subject{{ perf.subject.id }}Chapters">
+                                            View Chapters
+                                        </button>
+                                        <div class="collapse mt-2" id="subject{{ perf.subject.id }}Chapters">
+                                            {% for chapter in perf.chapters %}
+                                            <div>
+                                                <strong>{{ chapter.chapter.name }}:</strong>
+                                                {{ "%.2f"|format(chapter.avg_score) }}% 
+                                                ({{ chapter.attempts }} attempts)
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Available Quizzes -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Available Quizzes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for quiz in available_quizzes %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ quiz.chapter.subject.name }} - {{ quiz.chapter.name }}</h6>
+                                    <small class="text-muted">
+                                        Date: {{ quiz.date_of_quiz.strftime('%Y-%m-%d %H:%M') }} |
+                                        Duration: {{ quiz.time_duration }} minutes |
+                                        Questions: {{ quiz.questions|length }}
+                                    </small>
+                                </div>
+                                <a href="{{ url_for('start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">Start Quiz</a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <p class="mb-0">No quizzes available at the moment.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz History -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quiz History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for score in user_scores %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ score.quiz.chapter.subject.name }} - {{ score.quiz.chapter.name }}</h6>
+                                    <small class="text-muted">
+                                        Score: {{ score.total_scored }}/{{ score.total_questions }} 
+                                        ({{ (score.total_scored / score.total_questions * 100)|round(2) }}%) |
+                                        Attempted: {{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}
+                                    </small>
+                                </div>
+                                <a href="{{ url_for('view_attempt', attempt_id=score.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <p class="mb-0">No quiz attempts yet.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

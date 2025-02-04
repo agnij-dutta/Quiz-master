@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.chapter.name }} Quiz{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">{{ quiz.chapter.subject.name }} - {{ quiz.chapter.name }}</h4>
+                        <div id="timer" class="text-danger"></div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="quizForm" method="POST" action="{{ url_for('submit_quiz', quiz_id=quiz.id) }}">
+                        {% for question in quiz.questions %}
+                        <div class="mb-4">
+                            <h5 class="mb-3">{{ loop.index }}. {{ question.question_statement }}</h5>
+                            <div class="list-group">
+                                <label class="list-group-item">
+                                    <input type="radio" name="answer_{{ question.id }}" value="1" class="me-2" required>
+                                    {{ question.option1 }}
+                                </label>
+                                <label class="list-group-item">
+                                    <input type="radio" name="answer_{{ question.id }}" value="2" class="me-2">
+                                    {{ question.option2 }}
+                                </label>
+                                <label class="list-group-item">
+                                    <input type="radio" name="answer_{{ question.id }}" value="3" class="me-2">
+                                    {{ question.option3 }}
+                                </label>
+                                <label class="list-group-item">
+                                    <input type="radio" name="answer_{{ question.id }}" value="4" class="me-2">
+                                    {{ question.option4 }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary">Submit Quiz</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Timer functionality
+const duration = {{ quiz.time_duration * 60 }}; // Convert minutes to seconds
+let timeLeft = duration;
+
+function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById('timer').textContent = 
+        `Time Left: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+    if (timeLeft <= 0) {
+        document.getElementById('quizForm').submit();
+    }
+    timeLeft--;
+}
+
+// Update timer every second
+setInterval(updateTimer, 1000);
+updateTimer();
+
+// Prevent form resubmission on page refresh
+if (window.history.replaceState) {
+    window.history.replaceState(null, null, window.location.href);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Attempt{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Quiz Results</h4>
+                    <small class="text-muted">{{ score.quiz.chapter.name }}</small>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Score Summary</h5>
+                        <p>Score: {{ score.total_scored }} out of {{ score.total_questions }}</p>
+                        <p>Percentage: {{ (score.total_scored / score.total_questions * 100)|round(2) }}%</p>
+                        <p>Attempted on: {{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Quiz Details</h5>
+                        <p>Chapter: {{ score.quiz.chapter.name }}</p>
+                        <p>Subject: {{ score.quiz.chapter.subject.name }}</p>
+                        <p>Duration: {{ score.quiz.time_duration }} minutes</p>
+                        {% if score.quiz.remarks %}
+                        <p>Remarks: {{ score.quiz.remarks }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Results{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Quiz Results</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h5>{{ quiz.chapter.subject.name }} - {{ quiz.chapter.name }}</h5>
+                        <div class="display-4 my-3">
+                            {{ (score.total_scored / score.total_questions * 100)|round(2) }}%
+                        </div>
+                        <p class="lead">
+                            You scored {{ score.total_scored }} out of {{ score.total_questions }} questions
+                        </p>
+                    </div>
+
+                    <div class="progress mb-4" style="height: 20px;">
+                        <div class="progress-bar bg-success" 
+                             role="progressbar" 
+                             style="width: {{ (score.total_scored / score.total_questions * 100)|round(2) }}%">
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+                        <a href="{{ url_for('view_attempt', attempt_id=score.id) }}" class="btn btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

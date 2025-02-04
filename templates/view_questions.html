@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Questions - Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Quiz Questions</li>
+                </ol>
+            </nav>
+            <h2 class="mb-4">
+                <i class="fas fa-question-circle me-2"></i>
+                Questions for {{ quiz.chapter.name }} Quiz
+            </h2>
+        </div>
+    </div>
+
+    <!-- Add Question Form -->
+    <div class="card shadow-sm mb-4 fade-in">
+        <div class="card-header">
+            <h4 class="mb-0"><i class="fas fa-plus me-2"></i>Add New Question</h4>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('add_question', quiz_id=quiz.id) }}" method="POST">
+                <div class="mb-3">
+                    <label for="statement" class="form-label">Question Statement</label>
+                    <textarea class="form-control" id="statement" name="statement" rows="3" required></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="option1" class="form-label">Option 1</label>
+                        <input type="text" class="form-control" id="option1" name="option1" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="option2" class="form-label">Option 2</label>
+                        <input type="text" class="form-control" id="option2" name="option2" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="option3" class="form-label">Option 3</label>
+                        <input type="text" class="form-control" id="option3" name="option3" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="option4" class="form-label">Option 4</label>
+                        <input type="text" class="form-control" id="option4" name="option4" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="correct_option" class="form-label">Correct Option</label>
+                    <select class="form-select" id="correct_option" name="correct_option" required>
+                        <option value="">Select correct option</option>
+                        <option value="1">Option 1</option>
+                        <option value="2">Option 2</option>
+                        <option value="3">Option 3</option>
+                        <option value="4">Option 4</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add Question
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- List of Questions -->
+    <div class="card shadow-sm fade-in">
+        <div class="card-header">
+            <h4 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                Questions ({{ quiz.questions|length }})
+            </h4>
+        </div>
+        <div class="card-body">
+            {% if quiz.questions %}
+                {% for question in quiz.questions %}
+                    <div class="question-card mb-4 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="mb-0">Question {{ loop.index }}</h5>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editQuestion{{ question.id }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form action="{{ url_for('delete_question', question_id=question.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this question?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <p class="mb-3">{{ question.question_statement }}</p>
+                        <div class="options-list">
+                            <div class="option mb-2 {% if question.correct_option == 1 %}text-success{% endif %}">
+                                <i class="fas {% if question.correct_option == 1 %}fa-check-circle{% else %}fa-circle{% endif %} me-2"></i>
+                                {{ question.option1 }}
+                            </div>
+                            <div class="option mb-2 {% if question.correct_option == 2 %}text-success{% endif %}">
+                                <i class="fas {% if question.correct_option == 2 %}fa-check-circle{% else %}fa-circle{% endif %} me-2"></i>
+                                {{ question.option2 }}
+                            </div>
+                            <div class="option mb-2 {% if question.correct_option == 3 %}text-success{% endif %}">
+                                <i class="fas {% if question.correct_option == 3 %}fa-check-circle{% else %}fa-circle{% endif %} me-2"></i>
+                                {{ question.option3 }}
+                            </div>
+                            <div class="option mb-2 {% if question.correct_option == 4 %}text-success{% endif %}">
+                                <i class="fas {% if question.correct_option == 4 %}fa-check-circle{% else %}fa-circle{% endif %} me-2"></i>
+                                {{ question.option4 }}
+                            </div>
+                        </div>
+
+                        <!-- Edit Question Modal -->
+                        <div class="modal fade" id="editQuestion{{ question.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Edit Question</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="{{ url_for('edit_question', question_id=question.id) }}" method="POST">
+                                            <div class="mb-3">
+                                                <label for="statement{{ question.id }}" class="form-label">Question Statement</label>
+                                                <textarea class="form-control" id="statement{{ question.id }}" name="statement" rows="3" required>{{ question.question_statement }}</textarea>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="option1{{ question.id }}" class="form-label">Option 1</label>
+                                                    <input type="text" class="form-control" id="option1{{ question.id }}" name="option1" value="{{ question.option1 }}" required>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="option2{{ question.id }}" class="form-label">Option 2</label>
+                                                    <input type="text" class="form-control" id="option2{{ question.id }}" name="option2" value="{{ question.option2 }}" required>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="option3{{ question.id }}" class="form-label">Option 3</label>
+                                                    <input type="text" class="form-control" id="option3{{ question.id }}" name="option3" value="{{ question.option3 }}" required>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="option4{{ question.id }}" class="form-label">Option 4</label>
+                                                    <input type="text" class="form-control" id="option4{{ question.id }}" name="option4" value="{{ question.option4 }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="correct_option{{ question.id }}" class="form-label">Correct Option</label>
+                                                <select class="form-select" id="correct_option{{ question.id }}" name="correct_option" required>
+                                                    <option value="1" {% if question.correct_option == 1 %}selected{% endif %}>Option 1</option>
+                                                    <option value="2" {% if question.correct_option == 2 %}selected{% endif %}>Option 2</option>
+                                                    <option value="3" {% if question.correct_option == 3 %}selected{% endif %}>Option 3</option>
+                                                    <option value="4" {% if question.correct_option == 4 %}selected{% endif %}>Option 4</option>
+                                                </select>
+                                            </div>
+                                            <div class="text-end">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                    <p class="lead text-muted">No questions added yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .question-card {
+        transition: all 0.3s ease;
+        background-color: white;
+    }
+    .question-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .options-list .option {
+        padding: 0.5rem;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+    }
+    .options-list .text-success {
+        background-color: #e8f5e9;
+    }
+</style>
+{% endblock %}

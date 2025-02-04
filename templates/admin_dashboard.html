@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Admin Dashboard</h2>
+
+    <!-- Overall Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Overall Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Total Students</h6>
+                                <h3>{{ overall_stats.total_students }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Total Quizzes</h6>
+                                <h3>{{ overall_stats.total_quizzes }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Total Attempts</h6>
+                                <h3>{{ overall_stats.total_attempts }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Average Score</h6>
+                                <h3>{{ "%.2f"|format(overall_stats.avg_score) }}%</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Rankings -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Student Rankings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Student Name</th>
+                                    <th>Average Score</th>
+                                    <th>Total Attempts</th>
+                                    <th>Subject Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ranking in student_rankings %}
+                                <tr>
+                                    <td>#{{ ranking.rank }}</td>
+                                    <td>{{ ranking.student.full_name }}</td>
+                                    <td>{{ "%.2f"|format(ranking.avg_score) }}%</td>
+                                    <td>{{ ranking.total_attempts }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" data-bs-toggle="collapse" 
+                                                data-bs-target="#student{{ ranking.student.id }}Performance">
+                                            View Details
+                                        </button>
+                                        <div class="collapse mt-2" id="student{{ ranking.student.id }}Performance">
+                                            {% for subject, score in ranking.subject_performance.items() %}
+                                            <div><strong>{{ subject }}:</strong> {{ "%.2f"|format(score) }}%</div>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Subject Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Average Score</th>
+                                    <th>Median Score</th>
+                                    <th>Mode Score</th>
+                                    <th>Total Attempts</th>
+                                    <th>Number of Quizzes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in subject_stats %}
+                                <tr>
+                                    <td>{{ stat.subject.name }}</td>
+                                    <td>{{ "%.2f"|format(stat.avg_score) }}%</td>
+                                    <td>{{ "%.2f"|format(stat.median_score) }}%</td>
+                                    <td>{{ "%.2f"|format(stat.mode_score) }}%</td>
+                                    <td>{{ stat.total_attempts }}</td>
+                                    <td>{{ stat.num_quizzes }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Chapter Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Chapter</th>
+                                    <th>Subject</th>
+                                    <th>Average Score</th>
+                                    <th>Median Score</th>
+                                    <th>Total Attempts</th>
+                                    <th>Number of Quizzes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in chapter_stats %}
+                                <tr>
+                                    <td>{{ stat.chapter.name }}</td>
+                                    <td>{{ stat.chapter.subject.name }}</td>
+                                    <td>{{ "%.2f"|format(stat.avg_score) }}%</td>
+                                    <td>{{ "%.2f"|format(stat.median_score) }}%</td>
+                                    <td>{{ stat.total_attempts }}</td>
+                                    <td>{{ stat.num_quizzes }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Subjects Management -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Subjects</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+                        Add New Subject
+                    </button>
+                    <div class="list-group">
+                        {% for subject in subjects %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">{{ subject.name }}</h6>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editSubject({{ subject.id }})">Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteSubject({{ subject.id }})">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapters Management -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Chapters</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addChapterModal">
+                        Add New Chapter
+                    </button>
+                    <div class="list-group">
+                        {% for chapter in chapters %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">{{ chapter.name }}</h6>
+                                    <small class="text-muted">Subject: {{ chapter.subject.name }}</small>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editChapter({{ chapter.id }})">Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteChapter({{ chapter.id }})">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quizzes Management -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quizzes</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('create_quiz') }}" class="btn btn-primary mb-3">Create New Quiz</a>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Chapter</th>
+                                    <th>Date</th>
+                                    <th>Duration</th>
+                                    <th>Questions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for quiz in quizzes %}
+                                <tr>
+                                    <td>{{ quiz.chapter.name }}</td>
+                                    <td>{{ quiz.date_of_quiz.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ quiz.time_duration }} minutes</td>
+                                    <td>{{ quiz.questions|length }}</td>
+                                    <td>
+                                        <a href="/quiz/{{ quiz.id }}/edit" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <a href="/quiz/{{ quiz.id }}/questions" class="btn btn-sm btn-outline-info">Questions</a>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteQuiz({{ quiz.id }})">Delete</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Subject Modal -->
+<div class="modal fade" id="addSubjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Subject</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addSubjectForm" method="POST" action="{{ url_for('add_subject') }}">
+                    <div class="mb-3">
+                        <label for="subjectName" class="form-label">Subject Name</label>
+                        <input type="text" class="form-control" id="subjectName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subjectDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="subjectDescription" name="description" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Subject</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Chapter Modal -->
+<div class="modal fade" id="addChapterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Chapter</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addChapterForm" method="POST" action="{{ url_for('add_chapter') }}">
+                    <div class="mb-3">
+                        <label for="subjectSelect" class="form-label">Subject</label>
+                        <select class="form-select" id="subjectSelect" name="subject_id" required>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.id }}">{{ subject.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="chapterName" class="form-label">Chapter Name</label>
+                        <input type="text" class="form-control" id="chapterName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="chapterDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="chapterDescription" name="description" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Chapter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function editSubject(id) {
+    // Implement subject editing
+}
+
+function deleteSubject(id) {
+    if (confirm('Are you sure you want to delete this subject?')) {
+        fetch(`/subject/${id}`, {
+            method: 'DELETE',
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    }
+}
+
+function editChapter(id) {
+    // Implement chapter editing
+}
+
+function deleteChapter(id) {
+    if (confirm('Are you sure you want to delete this chapter?')) {
+        fetch(`/chapter/${id}`, {
+            method: 'DELETE',
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    }
+}
+
+function deleteQuiz(id) {
+    if (confirm('Are you sure you want to delete this quiz?')) {
+        fetch(`/quiz/${id}`, {
+            method: 'DELETE',
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

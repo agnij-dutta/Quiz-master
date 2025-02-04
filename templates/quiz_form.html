@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if quiz else 'Create' }} Quiz{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">{{ 'Edit' if quiz else 'Create' }} Quiz</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm fade-in">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas {% if quiz %}fa-edit{% else %}fa-plus{% endif %} me-2"></i>
+                        {{ 'Edit' if quiz else 'Create' }} Quiz
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label for="chapter" class="form-label">Chapter</label>
+                            <select class="form-select" id="chapter" name="chapter_id" required>
+                                <option value="">Select a chapter</option>
+                                {% for chapter in chapters %}
+                                <option value="{{ chapter.id }}" 
+                                        {% if quiz and quiz.chapter_id == chapter.id %}selected{% endif %}>
+                                    {{ chapter.subject.name }} - {{ chapter.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="date" class="form-label">Quiz Date & Time</label>
+                                <input type="datetime-local" class="form-control" id="date" name="date_of_quiz" 
+                                       value="{{ quiz.date_of_quiz.strftime('%Y-%m-%dT%H:%M') if quiz else '' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="duration" class="form-label">Duration (minutes)</label>
+                                <input type="number" class="form-control" id="duration" name="time_duration" 
+                                       value="{{ quiz.time_duration if quiz else 30 }}" required min="1">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="remarks" class="form-label">Remarks</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="3" 
+                                    placeholder="Add any additional notes or instructions for students">{{ quiz.remarks if quiz else '' }}</textarea>
+                        </div>
+
+                        <div id="questions">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4 class="mb-0">
+                                    <i class="fas fa-question-circle me-2"></i>Questions
+                                </h4>
+                                <button type="button" class="btn btn-primary" id="addQuestion">
+                                    <i class="fas fa-plus me-2"></i>Add Question
+                                </button>
+                            </div>
+                            {% if quiz %}
+                                {% for question in quiz.questions %}
+                                <div class="card mb-4 question-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <h5 class="mb-0">Question {{ loop.index }}</h5>
+                                            <button type="button" class="btn btn-outline-danger btn-sm remove-question">
+                                                <i class="fas fa-trash me-1"></i>Remove
+                                            </button>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Question Statement</label>
+                                            <textarea class="form-control" name="questions[{{ loop.index0 }}][statement]" 
+                                                    rows="2" required>{{ question.question_statement }}</textarea>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Option 1</label>
+                                                <input type="text" class="form-control" name="questions[{{ loop.index0 }}][option1]" 
+                                                       value="{{ question.option1 }}" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Option 2</label>
+                                                <input type="text" class="form-control" name="questions[{{ loop.index0 }}][option2]" 
+                                                       value="{{ question.option2 }}" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Option 3</label>
+                                                <input type="text" class="form-control" name="questions[{{ loop.index0 }}][option3]" 
+                                                       value="{{ question.option3 }}" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Option 4</label>
+                                                <input type="text" class="form-control" name="questions[{{ loop.index0 }}][option4]" 
+                                                       value="{{ question.option4 }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Correct Option</label>
+                                            <select class="form-select" name="questions[{{ loop.index0 }}][correct_option]" required>
+                                                <option value="1" {% if question.correct_option == 1 %}selected{% endif %}>Option 1</option>
+                                                <option value="2" {% if question.correct_option == 2 %}selected{% endif %}>Option 2</option>
+                                                <option value="3" {% if question.correct_option == 3 %}selected{% endif %}>Option 3</option>
+                                                <option value="4" {% if question.correct_option == 4 %}selected{% endif %}>Option 4</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Quiz
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .question-card {
+        transition: all 0.3s ease;
+    }
+    .question-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const questionsContainer = document.getElementById('questions');
+        const addQuestionBtn = document.getElementById('addQuestion');
+        let questionCount = {{ quiz.questions|length if quiz else 0 }};
+
+        addQuestionBtn.addEventListener('click', function() {
+            const questionCard = document.createElement('div');
+            questionCard.className = 'card mb-4 question-card fade-in';
+            questionCard.innerHTML = `
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="mb-0">New Question</h5>
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-question">
+                            <i class="fas fa-trash me-1"></i>Remove
+                        </button>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Question Statement</label>
+                        <textarea class="form-control" name="questions[${questionCount}][statement]" 
+                                rows="2" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Option 1</label>
+                            <input type="text" class="form-control" name="questions[${questionCount}][option1]" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Option 2</label>
+                            <input type="text" class="form-control" name="questions[${questionCount}][option2]" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Option 3</label>
+                            <input type="text" class="form-control" name="questions[${questionCount}][option3]" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Option 4</label>
+                            <input type="text" class="form-control" name="questions[${questionCount}][option4]" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Correct Option</label>
+                        <select class="form-select" name="questions[${questionCount}][correct_option]" required>
+                            <option value="">Select correct option</option>
+                            <option value="1">Option 1</option>
+                            <option value="2">Option 2</option>
+                            <option value="3">Option 3</option>
+                            <option value="4">Option 4</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            questionsContainer.appendChild(questionCard);
+            questionCount++;
+        });
+
+        questionsContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-question') || 
+                e.target.closest('.remove-question')) {
+                const card = e.target.closest('.question-card');
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => card.remove(), 300);
+            }
+        });
+    });
+</script>
+{% endblock %}

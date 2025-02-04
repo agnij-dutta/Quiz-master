@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Attempt Details{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Quiz Attempt Details</h4>
+                        <span class="badge bg-primary">
+                            Score: {{ (score.total_scored / score.total_questions * 100)|round(2) }}%
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>{{ score.quiz.chapter.subject.name }} - {{ score.quiz.chapter.name }}</h5>
+                        <p class="text-muted">
+                            Attempted on: {{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between">
+                            <h6>Questions Answered Correctly:</h6>
+                            <span>{{ score.total_scored }} / {{ score.total_questions }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" 
+                                 role="progressbar" 
+                                 style="width: {{ (score.total_scored / score.total_questions * 100)|round(2) }}%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

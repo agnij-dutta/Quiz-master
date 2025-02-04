@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Quiz Master{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6 fade-in">
+            <h1 class="display-4 fw-bold mb-4">Welcome to Quiz Master</h1>
+            <p class="lead mb-4">Enhance your learning journey through interactive quizzes designed by experts. Test your knowledge, track your progress, and excel in your studies.</p>
+            {% if not current_user.is_authenticated %}
+                <div class="d-grid gap-3 d-sm-flex">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 gap-3">
+                        <i class="fas fa-user-plus me-2"></i>Get Started
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-lg-6 mt-5 mt-lg-0 text-center fade-in">
+            <img src="https://cdn-icons-png.flaticon.com/512/2641/2641457.png" alt="Quiz Master" class="img-fluid" style="max-width: 400px;">
+        </div>
+    </div>
+
+    <div class="row mt-5 pt-5 g-4">
+        <div class="col-md-4 fade-in">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="display-4 text-primary mb-3">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="card-title h4 mb-3">Learn</h3>
+                    <p class="card-text text-muted">Access a wide range of quizzes created by subject matter experts to enhance your knowledge.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 fade-in">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="display-4 text-primary mb-3">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="card-title h4 mb-3">Progress</h3>
+                    <p class="card-text text-muted">Track your performance and see your improvement over time with detailed analytics.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 fade-in">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="display-4 text-primary mb-3">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3 class="card-title h4 mb-3">Excel</h3>
+                    <p class="card-text text-muted">Challenge yourself, compete with peers, and achieve academic excellence.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5 pt-5">
+        <div class="col-12 text-center fade-in">
+            <h2 class="h1 mb-4">Ready to start your learning journey?</h2>
+            {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Join Now
+                </a>
+            {% else %}
+                <a href="{{ url_for('user_dashboard' if not current_user.is_admin() else 'admin_dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

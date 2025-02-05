@@ -123,8 +123,38 @@ def admin_dashboard():
         'total_students': len(students),
         'total_quizzes': len(quizzes),
         'total_attempts': Score.query.count(),
-        'avg_score': db.session.query(db.func.avg(Score.total_scored * 100.0 / Score.total_questions)).scalar() or 0
+        'avg_score': db.session.query(db.func.avg(Score.total_scored * 100.0 / Score.total_questions)).scalar() or 0,
+        'avg_time_taken': db.session.query(db.func.avg(Score.time_taken)).scalar() or 0
     }
+    
+    # Get hourly attempt distribution
+    hourly_attempts = db.session.query(
+        db.func.extract('hour', Score.time_stamp_of_attempt).label('hour'),
+        db.func.count().label('count')
+    ).group_by('hour').all()
+    
+    # Get daily attempt distribution for last 7 days
+    seven_days_ago = datetime.now() - timedelta(days=7)
+    daily_attempts = db.session.query(
+        db.func.date(Score.time_stamp_of_attempt).label('date'),
+        db.func.count().label('count')
+    ).filter(Score.time_stamp_of_attempt >= seven_days_ago)\
+     .group_by('date').all()
+    
+    # Get quiz-wise average time taken
+    quiz_time_stats = db.session.query(
+        Quiz.id,
+        Quiz.chapter_id,
+        db.func.avg(Score.time_taken).label('avg_time')
+    ).join(Score).group_by(Quiz.id).all()
+    
+    # Add time-based metrics to overall_stats
+    overall_stats.update({
+        'hourly_attempts': {str(hour): count for hour, count in hourly_attempts},
+        'daily_attempts': {str(date): count for date, count in daily_attempts},
+        'quiz_time_stats': {quiz_id: {'chapter_id': chapter_id, 'avg_time': float(avg_time)} 
+                           for quiz_id, chapter_id, avg_time in quiz_time_stats}
+    })
     
     # Student rankings
     student_rankings = []
@@ -234,10 +264,8 @@ def user_dashboard():
     total_attempts = len(user_scores)
     if total_attempts > 0:
         avg_score = sum(s.total_scored * 100.0 / s.total_questions for s in user_scores) / total_attempts
-        # Calculate personal best
         personal_best = max((s.total_scored * 100.0 / s.total_questions) for s in user_scores)
-        # Calculate recent performance (last 5 quizzes)
-        recent_avg = sum(s.total_scored * 100.0 / s.total_questions for s in user_scores[:5]) / min(5, total_attempts) if total_attempts > 0 else 0
+        recent_avg = sum(s.total_scored * 100.0 / s.total_questions for s in user_scores[:5]) / min(5, total_attempts)
     else:
         avg_score = personal_best = recent_avg = 0
     
@@ -248,7 +276,29 @@ def user_dashboard():
         'recent_avg': recent_avg
     }
     
-    # Get subject-wise performance
+    # Calculate user's ranking
+    all_students = User.query.all()
+    rankings = []
+    for student in all_students:
+        student_scores = Score.query.filter_by(user_id=student.id).all()
+        if student_scores:
+            student_avg = sum(s.total_scored * 100.0 / s.total_questions for s in student_scores) / len(student_scores)
+            rankings.append((student.id, student_avg))
+    
+    # Sort by average score
+    rankings.sort(key=lambda x: x[1], reverse=True)
+
+    # Check if the user is in the rankings
+    user_rank = next((i for i, (student_id, _) in enumerate(rankings, 1) if student_id == current_user.id), None)
+    total_students = len(rankings)
+    
+    ranking_info = {
+        'rank': user_rank if user_rank is not None else 'N/A',
+        'total_students': total_students,
+        'percentile': ((total_students - user_rank + 1) / total_students) * 100 if user_rank is not None and total_students > 0 else 0
+    }
+    
+    # Calculate subject-wise performance
     subjects = Subject.query.all()
     subject_performance = []
     
@@ -260,7 +310,6 @@ def user_dashboard():
             subject_scores = [s for s in user_scores if s.quiz_id in quiz_ids]
             
             if subject_scores:
-                # Calculate statistics
                 total_subject_attempts = len(subject_scores)
                 subject_avg = sum(s.total_scored * 100.0 / s.total_questions for s in subject_scores) / total_subject_attempts
                 subject_best = max(s.total_scored * 100.0 / s.total_questions for s in subject_scores)
@@ -288,26 +337,6 @@ def user_dashboard():
                     'total_attempts': total_subject_attempts,
                     'chapters': chapter_stats
                 })
-    
-    # Get user's ranking
-    all_students = User.query.all()
-    rankings = []
-    for student in all_students:
-        student_scores = Score.query.filter_by(user_id=student.id).all()
-        if student_scores:
-            student_avg = sum(s.total_scored * 100.0 / s.total_questions for s in student_scores) / len(student_scores)
-            rankings.append((student.id, student_avg))
-    
-    # Sort by average score
-    rankings.sort(key=lambda x: x[1], reverse=True)
-    user_rank = next(i for i, (student_id, _) in enumerate(rankings, 1) if student_id == current_user.id)
-    total_students = len(rankings)
-    
-    ranking_info = {
-        'rank': user_rank,
-        'total_students': total_students,
-        'percentile': ((total_students - user_rank + 1) / total_students) * 100 if total_students > 0 else 0
-    }
     
     return render_template('user_dashboard.html',
                          available_quizzes=available_quizzes,
@@ -621,11 +650,6 @@ def start_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
     now = datetime.now()
     
-    # Check if quiz is available
-    if quiz.date_of_quiz > now:
-        flash('This quiz is not yet available')
-        return redirect(url_for('user_dashboard'))
-    
     # Check if quiz has ended
     quiz_end_time = quiz.date_of_quiz + timedelta(minutes=quiz.time_duration)
     if now > quiz_end_time:
@@ -706,12 +730,16 @@ def submit_quiz(quiz_id):
         if user_answer and int(user_answer) == question.correct_option:
             correct_answers += 1
     
+    # Calculate time taken in minutes
+    time_taken = int((now - quiz_start_time).total_seconds() / 60)
+    
     score = Score(
         quiz_id=quiz_id,
         user_id=current_user.id,
         total_scored=correct_answers,
         total_questions=total_questions,
-        time_stamp_of_attempt=now
+        time_stamp_of_attempt=now,
+        time_taken=time_taken
     )
     db.session.add(score)
     db.session.commit()

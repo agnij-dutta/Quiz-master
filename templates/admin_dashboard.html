@@ -39,6 +39,12 @@
                                 <h3>{{ "%.2f"|format(overall_stats.avg_score) }}%</h3>
                             </div>
                         </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h6>Average Time Taken</h6>
+                                <h3>{{ "%.1f"|format(overall_stats.avg_time_taken) }} min</h3>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -86,6 +92,95 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time-based Analytics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Time-based Analytics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Hourly Attempt Distribution -->
+                        <div class="col-md-6">
+                            <h6>Hourly Attempt Distribution</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Hour</th>
+                                            <th>Number of Attempts</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for hour in range(24) %}
+                                        <tr>
+                                            <td>{{ "%02d:00"|format(hour) }}</td>
+                                            <td>{{ overall_stats.hourly_attempts.get(hour|string, 0) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Daily Attempt Distribution -->
+                        <div class="col-md-6">
+                            <h6>Daily Attempt Distribution (Last 7 Days)</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Number of Attempts</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for date, count in overall_stats.daily_attempts.items() %}
+                                        <tr>
+                                            <td>{{ date }}</td>
+                                            <td>{{ count }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quiz-wise Time Stats -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6>Quiz-wise Average Time Taken</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Quiz</th>
+                                            <th>Chapter</th>
+                                            <th>Average Time (minutes)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for quiz in quizzes %}
+                                            {% if quiz.id|string in overall_stats.quiz_time_stats %}
+                                            <tr>
+                                                <td>Quiz #{{ quiz.id }}</td>
+                                                <td>{{ quiz.chapter.name }}</td>
+                                                <td>{{ "%.1f"|format(overall_stats.quiz_time_stats[quiz.id|string]['avg_time']) }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

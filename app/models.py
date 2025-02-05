@@ -90,3 +90,4 @@ class Score(db.Model):
     total_questions = db.Column(db.Integer, nullable=False)
     time_stamp_of_attempt = db.Column(db.DateTime, nullable=False,
                                     default=datetime.utcnow)
+    time_taken = db.Column(db.Integer, nullable=False)  # time taken in minutes

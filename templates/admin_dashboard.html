@@ -5,11 +5,32 @@
 {% block content %}
 <div class="container">
     <h2 class="mb-4">Admin Dashboard</h2>
+    
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" id="adminDashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Overview</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button" role="tab">Student Rankings</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab">Time Analytics</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="subjects-tab" data-bs-toggle="tab" data-bs-target="#subjects" type="button" role="tab">Subject Stats</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="management-tab" data-bs-toggle="tab" data-bs-target="#management" type="button" role="tab">Management</button>
+        </li>
+    </ul>
 
-    <!-- Overall Statistics -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
+    <!-- Tab Content -->
+    <div class="tab-content" id="adminDashboardContent">
+        <!-- Overview Tab -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+            <!-- Overall Statistics Card -->
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Overall Statistics</h5>
                 </div>
@@ -49,12 +70,11 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Student Rankings -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
+        <!-- Students Tab -->
+        <div class="tab-pane fade" id="students" role="tabpanel">
+            <!-- Student Rankings Card -->
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Student Rankings</h5>
                 </div>
@@ -96,12 +116,11 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Time-based Analytics -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
+        <!-- Analytics Tab -->
+        <div class="tab-pane fade" id="analytics" role="tabpanel">
+            <!-- Time-based Analytics Card -->
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Time-based Analytics</h5>
                 </div>
@@ -185,12 +204,11 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Subject Statistics -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
+        <!-- Subjects Tab -->
+        <div class="tab-pane fade" id="subjects" role="tabpanel">
+            <!-- Subject Statistics Card -->
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Subject Statistics</h5>
                 </div>
@@ -223,13 +241,8 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Chapter Statistics -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
+            <!-- Chapter Statistics Card -->
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Chapter Statistics</h5>
                 </div>
@@ -263,101 +276,104 @@
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="row">
-        <!-- Subjects Management -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Subjects</h5>
-                </div>
-                <div class="card-body">
-                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
-                        Add New Subject
-                    </button>
-                    <div class="list-group">
-                        {% for subject in subjects %}
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0">{{ subject.name }}</h6>
-                                <div>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editSubject({{ subject.id }})">Edit</button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteSubject({{ subject.id }})">Delete</button>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Chapters Management -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Chapters</h5>
-                </div>
-                <div class="card-body">
-                    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addChapterModal">
-                        Add New Chapter
-                    </button>
-                    <div class="list-group">
-                        {% for chapter in chapters %}
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-0">{{ chapter.name }}</h6>
-                                    <small class="text-muted">Subject: {{ chapter.subject.name }}</small>
-                                </div>
-                                <div>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editChapter({{ chapter.id }})">Edit</button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteChapter({{ chapter.id }})">Delete</button>
-                                </div>
-                            </div>
+        <!-- Management Tab -->
+        <div class="tab-pane fade" id="management" role="tabpanel">
+            <div class="row">
+                <!-- Subjects Management -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Subjects</h5>
                         </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quizzes Management -->
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Quizzes</h5>
-                </div>
-                <div class="card-body">
-                    <a href="{{ url_for('create_quiz') }}" class="btn btn-primary mb-3">Create New Quiz</a>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Chapter</th>
-                                    <th>Date</th>
-                                    <th>Duration</th>
-                                    <th>Questions</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for quiz in quizzes %}
-                                <tr>
-                                    <td>{{ quiz.chapter.name }}</td>
-                                    <td>{{ quiz.date_of_quiz.strftime('%Y-%m-%d') }}</td>
-                                    <td>{{ quiz.time_duration }} minutes</td>
-                                    <td>{{ quiz.questions|length }}</td>
-                                    <td>
-                                        <a href="/quiz/{{ quiz.id }}/edit" class="btn btn-sm btn-outline-primary">Edit</a>
-                                        <a href="/quiz/{{ quiz.id }}/questions" class="btn btn-sm btn-outline-info">Questions</a>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteQuiz({{ quiz.id }})">Delete</button>
-                                    </td>
-                                </tr>
+                        <div class="card-body">
+                            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+                                Add New Subject
+                            </button>
+                            <div class="list-group">
+                                {% for subject in subjects %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ subject.name }}</h6>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="editSubject({{ subject.id }})">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSubject({{ subject.id }})">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
                                 {% endfor %}
-                            </tbody>
-                        </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chapters Management -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Chapters</h5>
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addChapterModal">
+                                Add New Chapter
+                            </button>
+                            <div class="list-group">
+                                {% for chapter in chapters %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">{{ chapter.name }}</h6>
+                                            <small class="text-muted">Subject: {{ chapter.subject.name }}</small>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="editChapter({{ chapter.id }})">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteChapter({{ chapter.id }})">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quizzes Management -->
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Quizzes</h5>
+                        </div>
+                        <div class="card-body">
+                            <a href="{{ url_for('create_quiz') }}" class="btn btn-primary mb-3">Create New Quiz</a>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Chapter</th>
+                                            <th>Date</th>
+                                            <th>Duration</th>
+                                            <th>Questions</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for quiz in quizzes %}
+                                        <tr>
+                                            <td>{{ quiz.chapter.name }}</td>
+                                            <td>{{ quiz.date_of_quiz.strftime('%Y-%m-%d') }}</td>
+                                            <td>{{ quiz.time_duration }} minutes</td>
+                                            <td>{{ quiz.questions|length }}</td>
+                                            <td>
+                                                <a href="/quiz/{{ quiz.id }}/edit" class="btn btn-sm btn-outline-primary">Edit</a>
+                                                <a href="/quiz/{{ quiz.id }}/questions" class="btn btn-sm btn-outline-info">Questions</a>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteQuiz({{ quiz.id }})">Delete</button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

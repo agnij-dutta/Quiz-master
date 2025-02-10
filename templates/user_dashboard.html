@@ -6,10 +6,28 @@
 <div class="container">
     <h2 class="mb-4">Welcome, {{ current_user.full_name }}</h2>
 
-    <!-- Overall Performance -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" id="userDashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Overview</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="ranking-tab" data-bs-toggle="tab" data-bs-target="#ranking" type="button" role="tab">My Ranking</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab">Subject Performance</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="quizzes-tab" data-bs-toggle="tab" data-bs-target="#quizzes" type="button" role="tab">Quizzes</button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="userDashboardContent">
+        <!-- Overview Tab -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+            <!-- Overall Performance Card -->
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Your Performance Overview</h5>
                 </div>
@@ -43,12 +61,11 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Ranking Information -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
+        <!-- Ranking Tab -->
+        <div class="tab-pane fade" id="ranking" role="tabpanel">
+            <!-- Ranking Information Card -->
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Your Ranking</h5>
                 </div>
@@ -88,12 +105,11 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Subject Performance -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
+        <!-- Performance Tab -->
+        <div class="tab-pane fade" id="performance" role="tabpanel">
+            <!-- Subject Performance Card -->
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Subject-wise Performance</h5>
                 </div>
@@ -139,68 +155,71 @@
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="row">
-        <!-- Available Quizzes -->
-        <div class="col-md-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Available Quizzes</h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        {% for quiz in available_quizzes %}
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-1">{{ quiz.chapter.subject.name }} - {{ quiz.chapter.name }}</h6>
-                                    <small class="text-muted">
-                                        Date: {{ quiz.date_of_quiz.strftime('%Y-%m-%d %H:%M') }} |
-                                        Duration: {{ quiz.time_duration }} minutes |
-                                        Questions: {{ quiz.questions|length }}
-                                    </small>
+
+        <!-- Quizzes Tab -->
+        <div class="tab-pane fade" id="quizzes" role="tabpanel">
+            <div class="row">
+                <!-- Available Quizzes -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Available Quizzes</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group">
+                                {% for quiz in available_quizzes %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ quiz.chapter.subject.name }} - {{ quiz.chapter.name }}</h6>
+                                            <small class="text-muted">
+                                                Date: {{ quiz.date_of_quiz.strftime('%Y-%m-%d %H:%M') }} |
+                                                Duration: {{ quiz.time_duration }} minutes |
+                                                Questions: {{ quiz.questions|length }}
+                                            </small>
+                                        </div>
+                                        <a href="{{ url_for('start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">Start Quiz</a>
+                                    </div>
                                 </div>
-                                <a href="{{ url_for('start_quiz', quiz_id=quiz.id) }}" class="btn btn-primary">Start Quiz</a>
+                                {% else %}
+                                <div class="text-center py-3">
+                                    <p class="mb-0">No quizzes available at the moment.</p>
+                                </div>
+                                {% endfor %}
                             </div>
                         </div>
-                        {% else %}
-                        <div class="text-center py-3">
-                            <p class="mb-0">No quizzes available at the moment.</p>
-                        </div>
-                        {% endfor %}
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Quiz History -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Quiz History</h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        {% for score in user_scores %}
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-1">{{ score.quiz.chapter.subject.name }} - {{ score.quiz.chapter.name }}</h6>
-                                    <small class="text-muted">
-                                        Score: {{ score.total_scored }}/{{ score.total_questions }} 
-                                        ({{ (score.total_scored / score.total_questions * 100)|round(2) }}%) |
-                                        Attempted: {{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}
-                                    </small>
+                <!-- Quiz History -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Quiz History</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group">
+                                {% for score in user_scores %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ score.quiz.chapter.subject.name }} - {{ score.quiz.chapter.name }}</h6>
+                                            <small class="text-muted">
+                                                Score: {{ score.total_scored }}/{{ score.total_questions }} 
+                                                ({{ (score.total_scored / score.total_questions * 100)|round(2) }}%) |
+                                                Attempted: {{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}
+                                            </small>
+                                        </div>
+                                        <a href="{{ url_for('view_attempt', attempt_id=score.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </div>
                                 </div>
-                                <a href="{{ url_for('view_attempt', attempt_id=score.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                {% else %}
+                                <div class="text-center py-3">
+                                    <p class="mb-0">No quiz attempts yet.</p>
+                                </div>
+                                {% endfor %}
                             </div>
                         </div>
-                        {% else %}
-                        <div class="text-center py-3">
-                            <p class="mb-0">No quiz attempts yet.</p>
-                        </div>
-                        {% endfor %}
                     </div>
                 </div>
             </div>
